@@ -85,14 +85,3 @@ the test suite. You can run it locally with
 
     cd $TOX-LTT_ROOT
     tox -- --skip-large-download
-
-
-Documentation
--------------
-
-To build the html and latex documentation locally, run
-
-.. code-block:: sh
-
-  cd $TOX-LTT_ROOT
-  tox -e docs
