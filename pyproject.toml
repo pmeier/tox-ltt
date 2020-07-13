@@ -35,8 +35,8 @@ multi_line_output = 3
 force_grid_wrap = 0
 include_trailing_comma = true
 
-known_third_party = ["pytest"]
-known_first_party = ["tox_ltt"]
+known_third_party = ["pytest", "tox"]
+known_first_party = ["light-the-torch", "tox_ltt"]
 
 [tool.black]
 # See link below for available options

@@ -1,10 +1,13 @@
-import light_the_torch as ltt
+from typing import Optional
+
 import tox
-from light_the_torch.computation_backend import CPUBackend
 from tox import reporter
 from tox.action import Action
 from tox.config import Parser
 from tox.venv import VirtualEnv
+
+import light_the_torch as ltt
+from light_the_torch.computation_backend import CPUBackend
 
 
 @tox.hookimpl
@@ -62,6 +65,7 @@ def tox_testenv_install_deps(venv: VirtualEnv, action: Action) -> None:
         )
         return None
 
+    computation_backend: Optional[CPUBackend]
     if envconfig.force_cpu:
         reporter.verbosity1(
             (
