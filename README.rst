@@ -15,6 +15,35 @@ tox-ltt
 
 .. end-badges
 
+`tox <https://tox.readthedocs.io/en/latest/>`_ plugin for
+`light-the-torch <https://github.com/pmeier/light-the-torch>`_ .
+
+.. code-block:: sh
+
+  $ pip install tox tox-ltt
+  $ tox --help-ini
+  disable_light_the_torch <bool>   default: False
+  disable installing PyTorch distributions with light-the-torch
+
+  force_cpu       <bool>   default: False
+  force CPU as computation backend
+  [...]
+
+.. note::
+
+  If you have access to ``tox>=3.2`` you can use ``tox-ltt`` with the ``requires``
+  keyword:
+
+  .. code-block::
+
+    [tox]
+
+    [textenv]
+    requires =
+      tox-ltt
+    disable_light_the_torch = False
+    force_cpu = False
+
 
 .. |license|
   image:: https://img.shields.io/badge/License-BSD%203--Clause-blue.svg
