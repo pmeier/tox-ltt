@@ -1,5 +1,7 @@
 import pytest
 
+pytest_plugins = "tox._pytestplugin"
+
 
 class MarkConfig:
     def __init__(
