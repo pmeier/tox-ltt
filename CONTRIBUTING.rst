@@ -13,9 +13,9 @@ the development requirements:
 
 .. code-block:: sh
 
-  TOX-LTT_ROOT = tox-ltt
-  git clone https://github.com/pmeier/tox-ltt $TOX-LTT_ROOT
-  cd $TOX-LTT_ROOT
+  TOX_LTT_ROOT = tox-ltt
+  git clone https://github.com/pmeier/tox-ltt $TOX_LTT_ROOT
+  cd $TOX_LTT_ROOT
   pip install -r requirements-dev.txt
   pre-commit install
 
@@ -39,7 +39,7 @@ To format your code run
 
 .. code-block:: sh
 
-  cd $TOX-LTT_ROOT
+  cd $TOX_LTT_ROOT
   tox -e format
 
 .. note::
@@ -51,7 +51,7 @@ To run the full lint check locally run
 
 .. code-block:: sh
 
-  cd $TOX-LTT_ROOT
+  cd $TOX_LTT_ROOT
   tox -e lint
 
 
@@ -63,7 +63,7 @@ the test suite. You can run it locally with
 
 .. code-block:: sh
 
-  cd $TOX-LTT_ROOT
+  cd $TOX_LTT_ROOT
   tox
 
 .. note::
@@ -83,5 +83,5 @@ the test suite. You can run it locally with
 
   .. code-block:: sh
 
-    cd $TOX-LTT_ROOT
+    cd $TOX_LTT_ROOT
     tox -- --skip-large-download
