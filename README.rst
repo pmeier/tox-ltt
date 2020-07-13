@@ -12,15 +12,9 @@ tox-ltt
       - |black| |mypy| |lint|
     * - tests
       - |tests| |coverage|
-    * - docs
-      - |docs| |rtd|
 
 .. end-badges
 
-Install PyTorch distributions with light-the-torch
-
-For installation instructions and usage examples please consult the documentation
-`hosted on readthedocs.com <https://tox-ltt.readthedocs.io/en/latest>`_ .
 
 .. |license|
   image:: https://img.shields.io/badge/License-BSD%203--Clause-blue.svg
@@ -56,13 +50,3 @@ For installation instructions and usage examples please consult the documentatio
   image:: https://codecov.io/gh/pmeier/tox-ltt/branch/master/graph/badge.svg
     :target: https://codecov.io/gh/pmeier/tox-ltt
     :alt: Test coverage via codecov.io
-
-.. |docs|
-  image:: https://github.com/pmeier/tox-ltt/workflows/docs/badge.svg
-    :target: https://github.com/pmeier/tox-ltt/actions?query=workflow%3Adocs+branch%3Amaster
-    :alt: Docs status via GitHub Actions
-
-.. |rtd|
-  image:: https://img.shields.io/readthedocs/tox-ltt?label=latest&logo=read%20the%20docs
-    :target: https://tox-ltt.readthedocs.io/en/latest/?badge=latest
-    :alt: Latest documentation hosted on Read the Docs

@@ -11,6 +11,7 @@ on:
       - "tox_ltt/**"
       - "tests/**"
       - "setup.cfg"
+      - "pyproject.toml"
       - "pytest.ini"
       - "tox.ini"
       - ".coveragerc"
@@ -19,7 +20,7 @@ on:
       - ".github/workflows/tests.yml"
 
 jobs:
-  run:
+  integration:
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
