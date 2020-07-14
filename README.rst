@@ -37,10 +37,10 @@ tox-ltt
   .. code-block::
 
     [tox]
-
-    [textenv]
     requires =
       tox-ltt
+
+    [textenv]
     disable_light_the_torch = False
     force_cpu = False
 
