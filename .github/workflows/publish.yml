@@ -24,6 +24,8 @@ jobs:
         run: pip install pep517 twine
 
       - name: Build source and binary
+        env:
+          SETUPTOOLS_SCM_PRETEND_VERSION: 0.1.1
         run: python -m pep517.build --source --binary .
 
       - name: Upload to PyPI
