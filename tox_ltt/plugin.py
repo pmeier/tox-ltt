@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Any, Optional, Sequence, cast
 
 import tox
 from tox import reporter
@@ -7,7 +7,23 @@ from tox.config import Parser
 from tox.venv import VirtualEnv
 
 import light_the_torch as ltt
+from light_the_torch.cli import make_ltt_parser
 from light_the_torch.computation_backend import CPUBackend
+
+
+def extract_force_cpu_help() -> str:
+    def extract(seq: Sequence, attr: str, eq_cond: Any) -> Any:
+        reduced_seq = [item for item in seq if getattr(item, attr) == eq_cond]
+        assert len(reduced_seq) == 1
+        return reduced_seq[0]
+
+    ltt_parser = make_ltt_parser()
+
+    argument_group = extract(ltt_parser._action_groups, "title", "subcommands")
+    sub_parsers = extract(argument_group._actions, "dest", "subcommand")
+    install_parser = sub_parsers.choices["install"]
+    force_cpu = extract(install_parser._actions, "dest", "force_cpu")
+    return cast(str, force_cpu.help)
 
 
 @tox.hookimpl
@@ -18,11 +34,9 @@ def tox_addoption(parser: Parser) -> None:
         help="disable installing PyTorch distributions with light-the-torch",
         default=False,
     )
+
     parser.add_testenv_attribute(
-        name="force_cpu",
-        type="bool",
-        help="force CPU as computation backend",
-        default=False,
+        name="force_cpu", type="bool", help=extract_force_cpu_help(), default=False,
     )
 
 
