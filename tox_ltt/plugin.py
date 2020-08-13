@@ -1,4 +1,4 @@
-from typing import Any, Optional, Sequence, cast
+from typing import Any, List, Optional, Sequence, cast
 
 import tox
 from tox import reporter
@@ -61,7 +61,10 @@ def tox_testenv_install_deps(venv: VirtualEnv, action: Action) -> None:
     requirements = [dep_config.name for dep_config in venv.get_resolved_dependencies()]
 
     if not envconfig.skip_install:
-        requirements.append(venv.package.strpath)
+        path = venv.package.strpath
+        if envconfig.extras:
+            path += f"[{','.join(envconfig.extras)}]"
+        requirements.append(path)
 
     if not requirements:
         return None
@@ -69,6 +72,7 @@ def tox_testenv_install_deps(venv: VirtualEnv, action: Action) -> None:
     action.setactivity("finddeps-light-the-torch", "")
 
     dists = ltt.extract_dists(requirements)
+    dists = remove_extras(dists)
 
     if not dists:
         reporter.verbosity1(
@@ -95,3 +99,8 @@ def tox_testenv_install_deps(venv: VirtualEnv, action: Action) -> None:
 
     action.setactivity("installdeps-light-the-torch", ", ".join(links))
     venv.run_install_command(links, action)
+
+
+# TODO: this should probably implemented in light-the-torch
+def remove_extras(dists: List[str]) -> List[str]:
+    return [dist.split(";")[0] for dist in dists]
