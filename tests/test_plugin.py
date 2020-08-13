@@ -50,12 +50,16 @@ def get_setup_py():
     """
 
 
-def get_setup_cfg(name, version, install_requires=None):
+def get_setup_cfg(name, version, install_requires=None, extra_requires=None):
     lines = ["[metadata]", f"name = {name}", f"version = {version}"]
 
     if install_requires is not None:
         lines.extend(("[options]", "install_requires = "))
         lines.extend([f"\t{req}" for req in install_requires])
+
+    if extra_requires is not None:
+        lines.extend(("[options.extras_require]", "extra = "))
+        lines.extend([f"\t{req}" for req in extra_requires])
 
     return "\n".join(lines)
 
@@ -65,6 +69,7 @@ def get_tox_ini(
     force_cpu=None,
     deps=None,
     skip_install=False,
+    extra=False,
     pep517=True,
 ):
 
@@ -77,6 +82,8 @@ def get_tox_ini(
 
     if skip_install:
         lines.append("skip_install = True")
+    if extra:
+        lines.append("extras = extra")
     if disable_light_the_torch is not None:
         lines.append(f"disable_light_the_torch = {disable_light_the_torch}")
     if force_cpu is not None:
@@ -94,6 +101,7 @@ def tox_ltt_initproj(initproj):
         name="foo",
         version="1.2.3",
         install_requires=None,
+        extra_requires=None,
         disable_light_the_torch=None,
         force_cpu=None,
         deps=None,
@@ -102,10 +110,14 @@ def tox_ltt_initproj(initproj):
     ):
         filedefs = {
             "setup.cfg": get_setup_cfg(
-                name, version, install_requires=install_requires
+                name,
+                version,
+                install_requires=install_requires,
+                extra_requires=extra_requires,
             ),
             "tox.ini": get_tox_ini(
                 skip_install=skip_install,
+                extra=extra_requires is not None,
                 disable_light_the_torch=disable_light_the_torch,
                 force_cpu=force_cpu,
                 deps=deps,
@@ -229,6 +241,27 @@ def test_tox_ltt_project_pytorch_dists(
         mock.reset()
         with subtests.test(pep517=pep517):
             tox_ltt_initproj(install_requires=install_requires, pep517=pep517)
+
+            result = cmd()
+
+            result.assert_success(is_run_test_env=False)
+
+            args, _ = mock.call_args
+            assert set(args[0]) == dists
+
+
+def test_tox_ltt_project_extra_pytorch_dists(
+    subtests, patch_find_links, tox_ltt_initproj, cmd, install_mock
+):
+    mock = patch_find_links()
+
+    extra_requires = ("torch>=1.5.0", "torchvision>=0.6.0")
+    dists = set(extra_requires)
+
+    for pep517 in (True, False):
+        mock.reset()
+        with subtests.test(pep517=pep517):
+            tox_ltt_initproj(extra_requires=extra_requires, pep517=pep517)
 
             result = cmd()
 
