@@ -1,4 +1,3 @@
-import re
 from typing import Any, List, Optional, Sequence, cast
 
 import tox
@@ -102,16 +101,6 @@ def tox_testenv_install_deps(venv: VirtualEnv, action: Action) -> None:
     venv.run_install_command(links, action)
 
 
-EXTRAS_PATTERN = re.compile('(?P<dist>[^;]*)(; extra == "[^"]*")?')
-
-
 # TODO: this should probably implemented in light-the-torch
 def remove_extras(dists: List[str]) -> List[str]:
-    dists_ = []
-    for dist in dists:
-        match = EXTRAS_PATTERN.match(dist)
-        if match is None:
-            continue
-
-        dists_.append(match.group("dist"))
-    return dists_
+    return [dist.split(";")[0] for dist in dists]
