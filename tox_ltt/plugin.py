@@ -1,9 +1,10 @@
+import subprocess
 from typing import Any, List, Optional, Sequence, cast
 
 import tox
 from tox import reporter
 from tox.action import Action
-from tox.config import Parser
+from tox.config import Parser, TestenvConfig
 from tox.venv import VirtualEnv
 
 import light_the_torch as ltt
@@ -83,19 +84,11 @@ def tox_testenv_install_deps(venv: VirtualEnv, action: Action) -> None:
         )
         return None
 
-    computation_backend: Optional[CPUBackend]
-    if envconfig.force_cpu:
-        reporter.verbosity1(
-            (
-                "Using CPU as computation backend instead of auto-detecting since "
-                "'force_cpu = True' is configured."
-            ),
-        )
-        computation_backend = CPUBackend()
-    else:
-        computation_backend = None
-
-    links = ltt.find_links(dists, computation_backend=computation_backend)
+    links = ltt.find_links(
+        dists,
+        computation_backend=get_computation_backend(envconfig),
+        python_version=get_python_version(envconfig),
+    )
 
     action.setactivity("installdeps-light-the-torch", ", ".join(links))
     venv.run_install_command(links, action)
@@ -104,3 +97,21 @@ def tox_testenv_install_deps(venv: VirtualEnv, action: Action) -> None:
 # TODO: this should probably implemented in light-the-torch
 def remove_extras(dists: List[str]) -> List[str]:
     return [dist.split(";")[0] for dist in dists]
+
+
+def get_computation_backend(envconfig: TestenvConfig) -> Optional[CPUBackend]:
+    if not envconfig.force_cpu:
+        return None
+
+    reporter.verbosity1(
+        (
+            "Using CPU as computation backend instead of auto-detecting since "
+            "'force_cpu = True' is configured."
+        ),
+    )
+    return CPUBackend()
+
+
+def get_python_version(envconfig: TestenvConfig) -> str:
+    output = subprocess.check_output((envconfig.basepython, "--version"))
+    return output.decode("utf-8").strip()[7:]
