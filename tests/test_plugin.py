@@ -1,3 +1,5 @@
+import shutil
+
 import pytest
 
 from light_the_torch.computation_backend import CPUBackend
@@ -8,10 +10,9 @@ def patch_extract_dists(mocker):
     def patch_extract_dists_(return_value=None):
         if return_value is None:
             return_value = []
-            return mocker.patch(
-                "tox_ltt.plugin.ltt.extract_dists", return_value=return_value
-            )
-        return mocker.patch()
+        return mocker.patch(
+            "tox_ltt.plugin.ltt.extract_dists", return_value=return_value
+        )
 
     return patch_extract_dists_
 
@@ -21,10 +22,7 @@ def patch_find_links(mocker):
     def patch_find_links_(return_value=None):
         if return_value is None:
             return_value = []
-            return mocker.patch(
-                "tox_ltt.plugin.ltt.find_links", return_value=return_value
-            )
-        return mocker.patch()
+        return mocker.patch("tox_ltt.plugin.ltt.find_links", return_value=return_value)
 
     return patch_find_links_
 
@@ -65,6 +63,7 @@ def get_setup_cfg(name, version, install_requires=None, extra_requires=None):
 
 
 def get_tox_ini(
+    basepython=None,
     disable_light_the_torch=None,
     force_cpu=None,
     deps=None,
@@ -80,6 +79,8 @@ def get_tox_ini(
 
     lines.extend(("[testenv]", "requires = ", "\ttox-ltt",))
 
+    if basepython is not None:
+        lines.append(f"basepython = {basepython}")
     if skip_install:
         lines.append("skip_install = True")
     if extra:
@@ -100,6 +101,7 @@ def tox_ltt_initproj(initproj):
     def tox_ltt_initproj_(
         name="foo",
         version="1.2.3",
+        basepython=None,
         install_requires=None,
         extra_requires=None,
         disable_light_the_torch=None,
@@ -116,6 +118,7 @@ def tox_ltt_initproj(initproj):
                 extra_requires=extra_requires,
             ),
             "tox.ini": get_tox_ini(
+                basepython=basepython,
                 skip_install=skip_install,
                 extra=extra_requires is not None,
                 disable_light_the_torch=disable_light_the_torch,
@@ -269,3 +272,45 @@ def test_tox_ltt_project_extra_pytorch_dists(
 
             args, _ = mock.call_args
             assert set(args[0]) == dists
+
+
+@pytest.fixture
+def other_basepythons(current_tox_py):
+    current_minor = int(current_tox_py[-1])
+    basepythons = (f"python3.{minor}" for minor in {6, 7, 8} - {current_minor})
+    return [
+        basepython for basepython in basepythons if shutil.which(basepython) is not None
+    ]
+
+
+@pytest.mark.slow
+def test_tox_ltt_other_basepython(
+    subtests,
+    mock_venv,
+    patch_extract_dists,
+    patch_find_links,
+    install_mock,
+    tox_ltt_initproj,
+    cmd,
+    other_basepythons,
+):
+    def canonical_to_tox(version):
+        major, minor, _ = version.split(".")
+        return f"python{major}.{minor}"
+
+    deps = ["torch"]
+    patch_extract_dists(return_value=deps)
+    mock = patch_find_links()
+
+    for basepython in other_basepythons:
+        mock.reset()
+
+        with subtests.test(basepython=basepython):
+            tox_ltt_initproj(basepython=basepython, deps=deps)
+
+            result = cmd()
+            result.assert_success()
+
+            _, kwargs = mock.call_args
+            python_version = kwargs["python_version"]
+            assert canonical_to_tox(python_version) == basepython
