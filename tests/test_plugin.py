@@ -1,3 +1,5 @@
+import shutil
+
 import pytest
 
 from light_the_torch.computation_backend import CPUBackend
@@ -275,7 +277,10 @@ def test_tox_ltt_project_extra_pytorch_dists(
 @pytest.fixture
 def other_basepythons(current_tox_py):
     current_minor = int(current_tox_py[-1])
-    return (f"python3.{minor}" for minor in {6, 7, 8} - {current_minor})
+    basepythons = (f"python3.{minor}" for minor in {6, 7, 8} - {current_minor})
+    return [
+        basepython for basepython in basepythons if shutil.which(basepython) is not None
+    ]
 
 
 @pytest.mark.slow
