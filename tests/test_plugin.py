@@ -68,10 +68,10 @@ def get_tox_ini(
     force_cpu=None,
     deps=None,
     skip_install=False,
+    usedevelop=False,
     extra=False,
     pep517=True,
 ):
-
     lines = ["[tox]", "envlist = py"]
 
     if pep517:
@@ -83,6 +83,8 @@ def get_tox_ini(
         lines.append(f"basepython = {basepython}")
     if skip_install:
         lines.append("skip_install = True")
+    if usedevelop:
+        lines.append("usedevelop = True")
     if extra:
         lines.append("extras = extra")
     if disable_light_the_torch is not None:
@@ -108,6 +110,7 @@ def tox_ltt_initproj(initproj):
         force_cpu=None,
         deps=None,
         skip_install=False,
+        usedevelop=False,
         pep517=True,
     ):
         filedefs = {
@@ -120,6 +123,7 @@ def tox_ltt_initproj(initproj):
             "tox.ini": get_tox_ini(
                 basepython=basepython,
                 skip_install=skip_install,
+                usedevelop=usedevelop,
                 extra=extra_requires is not None,
                 disable_light_the_torch=disable_light_the_torch,
                 force_cpu=force_cpu,
@@ -272,6 +276,22 @@ def test_tox_ltt_project_extra_pytorch_dists(
 
             args, _ = mock.call_args
             assert set(args[0]) == dists
+
+
+def test_tox_ltt_project_usedevelop(
+    patch_find_links, tox_ltt_initproj, cmd, install_mock
+):
+    mock = patch_find_links()
+    install_requires = ("torch>=1.5.0", "torchvision>=0.6.0")
+    dists = set(install_requires)
+    tox_ltt_initproj(install_requires=install_requires, usedevelop=True, pep517=False)
+
+    result = cmd()
+
+    result.assert_success(is_run_test_env=False)
+
+    args, _ = mock.call_args
+    assert set(args[0]) == dists
 
 
 @pytest.fixture
