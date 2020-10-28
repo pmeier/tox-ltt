@@ -62,7 +62,10 @@ def tox_testenv_install_deps(venv: VirtualEnv, action: Action) -> None:
     requirements = [dep_config.name for dep_config in venv.get_resolved_dependencies()]
 
     if not envconfig.skip_install:
-        path = venv.package.strpath
+        if envconfig.usedevelop:
+            path = config.setupdir.strpath
+        else:
+            path = venv.package.strpath
         if envconfig.extras:
             path += f"[{','.join(envconfig.extras)}]"
         requirements.append(path)
