@@ -12,7 +12,7 @@ from light_the_torch.cli import make_ltt_parser
 from light_the_torch.computation_backend import CPUBackend
 
 
-def extract_force_cpu_help() -> str:
+def extract_ltt_option_help(subcommand: str, option: str) -> str:
     def extract(seq: Sequence, attr: str, eq_cond: Any) -> Any:
         reduced_seq = [item for item in seq if getattr(item, attr) == eq_cond]
         assert len(reduced_seq) == 1
@@ -22,9 +22,8 @@ def extract_force_cpu_help() -> str:
 
     argument_group = extract(ltt_parser._action_groups, "title", "subcommands")
     sub_parsers = extract(argument_group._actions, "dest", "subcommand")
-    install_parser = sub_parsers.choices["install"]
-    force_cpu = extract(install_parser._actions, "dest", "force_cpu")
-    return cast(str, force_cpu.help)
+    subcommand_parser = sub_parsers.choices[subcommand]
+    return cast(str, extract(subcommand_parser._actions, "dest", option).help)
 
 
 @tox.hookimpl
@@ -36,9 +35,15 @@ def tox_addoption(parser: Parser) -> None:
         default=False,
     )
     parser.add_testenv_attribute(
+        name="pytorch_channel",
+        type="string",
+        help=extract_ltt_option_help("install", "channel"),
+        default="stable",
+    )
+    parser.add_testenv_attribute(
         name="pytorch_force_cpu",
         type="bool",
-        help=extract_force_cpu_help(),
+        help=extract_ltt_option_help("install", "force_cpu"),
         default=False,
     )
     parser.add_testenv_attribute(
@@ -98,6 +103,7 @@ def tox_testenv_install_deps(venv: VirtualEnv, action: Action) -> None:
     links = ltt.find_links(
         dists,
         computation_backend=get_computation_backend(envconfig),
+        channel=envconfig.pytorch_channel,
         python_version=get_python_version(envconfig),
     )
 

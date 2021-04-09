@@ -65,6 +65,7 @@ def get_setup_cfg(name, version, install_requires=None, extra_requires=None):
 def get_tox_ini(
     basepython=None,
     disable_light_the_torch=None,
+    pytorch_channel=None,
     pytorch_force_cpu=None,
     force_cpu=None,
     deps=None,
@@ -90,6 +91,8 @@ def get_tox_ini(
         lines.append("extras = extra")
     if disable_light_the_torch is not None:
         lines.append(f"disable_light_the_torch = {disable_light_the_torch}")
+    if pytorch_channel is not None:
+        lines.append(f"pytorch_channel = {pytorch_channel}")
     if pytorch_force_cpu is not None:
         lines.append(f"pytorch_force_cpu = {pytorch_force_cpu}")
     if force_cpu is not None:
@@ -110,6 +113,7 @@ def tox_ltt_initproj(initproj):
         install_requires=None,
         extra_requires=None,
         disable_light_the_torch=None,
+        pytorch_channel=None,
         pytorch_force_cpu=None,
         force_cpu=None,
         deps=None,
@@ -130,6 +134,7 @@ def tox_ltt_initproj(initproj):
                 usedevelop=usedevelop,
                 extra=extra_requires is not None,
                 disable_light_the_torch=disable_light_the_torch,
+                pytorch_channel=pytorch_channel,
                 pytorch_force_cpu=pytorch_force_cpu,
                 force_cpu=force_cpu,
                 deps=deps,
@@ -151,6 +156,7 @@ def test_help_ini(cmd):
     result = cmd("--help-ini")
     result.assert_success(is_run_test_env=False)
     assert "disable_light_the_torch" in result.out
+    assert "pytorch_channel" in result.out
     assert "pytorch_force_cpu" in result.out
 
 
@@ -163,6 +169,21 @@ def test_tox_ltt_disabled(patch_extract_dists, tox_ltt_initproj, cmd):
 
     result.assert_success(is_run_test_env=False)
     mock.assert_not_called()
+
+
+@pytest.mark.slow
+def test_tox_ltt_pytorch_channel(patch_find_links, tox_ltt_initproj, cmd, install_mock):
+    channel = "channel"
+
+    mock = patch_find_links()
+    tox_ltt_initproj(deps=("torch",), pytorch_channel=channel)
+
+    result = cmd()
+
+    result.assert_success(is_run_test_env=False)
+
+    _, kwargs = mock.call_args
+    assert kwargs["channel"] == channel
 
 
 @pytest.mark.slow
