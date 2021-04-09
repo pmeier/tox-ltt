@@ -35,9 +35,17 @@ def tox_addoption(parser: Parser) -> None:
         help="disable installing PyTorch distributions with light-the-torch",
         default=False,
     )
-
     parser.add_testenv_attribute(
-        name="force_cpu", type="bool", help=extract_force_cpu_help(), default=False,
+        name="pytorch_force_cpu",
+        type="bool",
+        help=extract_force_cpu_help(),
+        default=False,
+    )
+    parser.add_testenv_attribute(
+        name="force_cpu",
+        type="bool",
+        help="Deprecated alias of 'pytorch_force_cpu'.",
+        default=False,
     )
 
 
@@ -102,14 +110,23 @@ def remove_extras(dists: List[str]) -> List[str]:
     return [dist.split(";")[0] for dist in dists]
 
 
+def _resolve_force_cpu(new: bool, legacy: bool) -> bool:
+    if legacy:
+        reporter.warning("The option 'force_cpu' was renamed to 'pytorch_force_cpu'.")
+        return True
+
+    return new
+
+
 def get_computation_backend(envconfig: TestenvConfig) -> Optional[CPUBackend]:
-    if not envconfig.force_cpu:
+    force_cpu = _resolve_force_cpu(envconfig.pytorch_force_cpu, envconfig.force_cpu)
+    if not force_cpu:
         return None
 
     reporter.verbosity1(
         (
             "Using CPU as computation backend instead of auto-detecting since "
-            "'force_cpu = True' is configured."
+            "'pytorch_force_cpu = True' is configured."
         ),
     )
     return CPUBackend()
