@@ -102,7 +102,7 @@ def tox_testenv_install_deps(venv: VirtualEnv, action: Action) -> None:
 
     links = ltt.find_links(
         dists,
-        computation_backend=get_computation_backend(envconfig),
+        computation_backends=get_computation_backend(envconfig),
         channel=envconfig.pytorch_channel,
         python_version=get_python_version(envconfig),
     )

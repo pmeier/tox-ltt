@@ -198,7 +198,7 @@ def test_tox_ltt_pytorch_force_cpu(
     result.assert_success(is_run_test_env=False)
 
     _, kwargs = mock.call_args
-    assert kwargs["computation_backend"] == CPUBackend()
+    assert kwargs["computation_backends"] == CPUBackend()
 
 
 @pytest.mark.slow
@@ -213,7 +213,7 @@ def test_tox_ltt_force_cpu_legacy(
     result.assert_success(is_run_test_env=False)
 
     _, kwargs = mock.call_args
-    assert kwargs["computation_backend"] == CPUBackend()
+    assert kwargs["computation_backends"] == CPUBackend()
 
 
 def test_tox_ltt_no_requirements(
